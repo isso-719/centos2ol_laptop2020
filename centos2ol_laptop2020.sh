@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # centos2ol.sh をダウンロード
+echo "Centos2ol.sh をダウンロードします。"
 cd
 wget https://raw.githubusercontent.com/oracle/centos2ol/main/centos2ol.sh
 
@@ -9,6 +10,7 @@ chmod 700 centos2ol.sh
 
 # centos2ol.sh を実行
 # -V オプションで最小限の RPM のみ Oracle Linux のものにする
+echo "CentOS から OracleLinux へ移行を開始します。"
 ./centos2ol.sh -V
 
 # ./centos2ol を削除
@@ -32,7 +34,7 @@ dnf config-manager --setopt="ol8_codeready_builder.priority=15" --save ol8_coder
 # oracle-epel-release-el8 の epel-release への入れ替え
 dnf -y remove oracle-epel-release-el8
 rm /etc/yum.repos.d/epel.repo* -f
-dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
 # 通常時 EPEL のリポジトリを使わないようにする
 yes no | cp -ai /etc/yum.repos.d/epel.repo{,.default}
@@ -43,15 +45,20 @@ dnf config-manager --disable epel-modular
 dnf config-manager --setopt="epel-modular.priority=20" --save epel-modular
 
 # Unbreakable Enterprise Kernel(UEK) の削除と無効化
-dnf remove kernel-uek
+dnf -y remove kernel-uek
 yes no | cp -ai /etc/yum.repos.d/oracle-linux-ol8.repo{,.default}
 dnf config-manager --disable ol8_UEKR6
 
 # CentOS 由来パッケージの入れ替え・削除
 rpm -qa | grep centos
 dnf swap centos-logos-httpd oracle-logos-httpd
-dnf remove centos-gpg-keys
+dnf -y remove centos-gpg-keys
+
+# centos2ol_laptop2020.sh の削除
+rm -f ./centos2ol_laptop2020.sh
+
+# 移行完了
+echo "移行が完了しました。再起動します..."
 
 # すべての反映
 reboot
-
