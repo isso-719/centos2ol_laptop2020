@@ -53,9 +53,21 @@ yes no | cp -ai /etc/yum.repos.d/oracle-linux-ol8.repo{,.default}
 dnf config-manager --disable ol8_UEKR6
 
 # CentOS 由来パッケージの入れ替え・削除
-rpm -qa | grep centos
-dnf -y swap centos-logos-httpd oracle-logos-httpd
-dnf -y remove centos-gpg-keys
+# rpm -qa | grep centos
+dnf -y swap redhat-indexhtml centos-indexhtml
+
+# dnf コマンドを実行時の競合を解消
+# ディストリビューション固有のモジュールストリームを切り替える
+sed -i -e 's|rhel8|ol8|g' /etc/dnf/modules.d/*.module
+
+# 最新の利用可能なバージョンへインストール済みパッケージを同期する
+# dnf distro-sync
+
+# 問題のある module をリセット
+dnf -y module reset virt
+
+# dnf update を実行
+dnf -y update
 
 # Laptop2020-CentOS-To-OracleLinux.sh を削除
 rm -f ./Laptop2020-CentOS-To-OracleLinux.sh
