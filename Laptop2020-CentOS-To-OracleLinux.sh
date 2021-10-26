@@ -57,9 +57,12 @@ rpm -qa | grep centos
 dnf -y swap centos-logos-httpd oracle-logos-httpd
 dnf -y remove centos-gpg-keys
 
+# Laptop2020-CentOS-To-OracleLinux.sh を削除
+rm -f ./Laptop2020-CentOS-To-OracleLinux.sh
+
 # 移行完了
 echo "********************************************************"
-echo "移行が完了しました。再起動します..."
+echo "移行が完了しました。"
 echo "********************************************************"
 
 # すべての反映
