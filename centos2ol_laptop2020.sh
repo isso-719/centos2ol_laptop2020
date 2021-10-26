@@ -1,10 +1,11 @@
 #!/bin/sh
 
-# centos2ol.sh をダウンロード
 echo "********************************************************"
-echo "Centos2ol.sh をダウンロードします。"
+echo "CentOS から OracleLinux へ移行を開始します。"
+echo "移行には時間がかかる場合があります。"
 echo "********************************************************"
 
+# centos2ol.sh をダウンロード
 cd
 wget https://raw.githubusercontent.com/oracle/centos2ol/main/centos2ol.sh
 
@@ -13,11 +14,6 @@ chmod 700 centos2ol.sh
 
 # centos2ol.sh を実行
 # -V オプションで最小限の RPM のみ Oracle Linux のものにする
-echo "********************************************************"
-echo "CentOS から OracleLinux へ移行を開始します。"
-echo "移行には時間がかかる場合があります。"
-echo "********************************************************"
-
 ./centos2ol.sh -V
 
 # ./centos2ol を削除
@@ -58,11 +54,8 @@ dnf config-manager --disable ol8_UEKR6
 
 # CentOS 由来パッケージの入れ替え・削除
 rpm -qa | grep centos
-dnf swap centos-logos-httpd oracle-logos-httpd
+dnf -y swap centos-logos-httpd oracle-logos-httpd
 dnf -y remove centos-gpg-keys
-
-# centos2ol_laptop2020.sh の削除
-rm -f ./centos2ol_laptop2020.sh
 
 # 移行完了
 echo "********************************************************"
