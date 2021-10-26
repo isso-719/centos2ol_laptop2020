@@ -1,7 +1,10 @@
 #!/bin/sh
 
 # centos2ol.sh をダウンロード
+echo "********************************************************"
 echo "Centos2ol.sh をダウンロードします。"
+echo "********************************************************"
+
 cd
 wget https://raw.githubusercontent.com/oracle/centos2ol/main/centos2ol.sh
 
@@ -10,7 +13,11 @@ chmod 700 centos2ol.sh
 
 # centos2ol.sh を実行
 # -V オプションで最小限の RPM のみ Oracle Linux のものにする
+echo "********************************************************"
 echo "CentOS から OracleLinux へ移行を開始します。"
+echo "移行には時間がかかる場合があります。"
+echo "********************************************************"
+
 ./centos2ol.sh -V
 
 # ./centos2ol を削除
@@ -58,7 +65,9 @@ dnf -y remove centos-gpg-keys
 rm -f ./centos2ol_laptop2020.sh
 
 # 移行完了
+echo "********************************************************"
 echo "移行が完了しました。再起動します..."
+echo "********************************************************"
 
 # すべての反映
 reboot
