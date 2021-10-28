@@ -1,11 +1,6 @@
 #!/bin/bash
 
-echo "********************************************************"
-echo "CentOS から OracleLinux へ移行を開始します。"
-echo "移行には約 15 分 から 30 分 かかります。(ダミー)"
-echo "また、10 GB 以上の通信を必要とします。(ダミー)"
-echo "********************************************************"
-
+# システムの前提をチェックする
 # 実行済みチェック
 rpm -qi oraclelinux-release > /dev/null
 RET=$?
@@ -18,22 +13,42 @@ fi
 rpm -qi centos-release > /dev/null
 RET=$?
 if [[ "${RET}" -ne 0 ]]; then
-    echo "CentOS ではありません。"
-    exit 0
+    echo "CentOS ではないので、実行できません。"
+    exit 1
 fi
 
 
-# centos2ol.sh をダウンロード
+# 移行前チェック
+echo "********************************************************"
+echo "注意: 移行処理に失敗すると、この Linux 環境が壊れる可能性があります。"
+echo "下記の質問に y もしくは N で回答してください。"
+echo "********************************************************"
+read -p "RAT からの案内手順に従い、VMware で VM のスナップショットを作成しましたか? y: はい, N: いいえ: " IS_SNAPSHOT
+if [[ "${IS_SNAPSHOT}" != "y" ]]; then
+    echo "VM のスナップショットを作成してから再度実行してください。"
+    exit 1
+fi
+
+
+# 移行開始
+echo "********************************************************"
+echo "CentOS から OracleLinux へ移行を開始します。"
+echo "移行には約 15 分 から 30 分 かかります。(ダミー)"
+echo "また、10 GB 以上の通信を必要とします。(ダミー)"
+echo "********************************************************"
+
+# centos2ol.sh の存在チェックと削除
 cd
 if [ -f centos2ol.sh ]; then rm centos2ol.sh -f; fi
+
+# centos2ol.sh をダウンロード
 wget https://raw.githubusercontent.com/oracle/centos2ol/main/centos2ol.sh
 
 # centos2ol.sh の権限を設定
 chmod 700 centos2ol.sh
 
 # centos2ol.sh を実行
-# -V オプションで最小限の RPM のみ Oracle Linux のものにする
-./centos2ol.sh -V
+./centos2ol.sh -V -k
 
 # ./centos2ol を削除
 rm -f ./centos2ol.sh
@@ -53,6 +68,12 @@ yes no | cp -ai /etc/yum.repos.d/oracle-linux-ol8.repo{,.default}
 dnf config-manager --enable ol8_codeready_builder
 dnf config-manager --setopt="ol8_codeready_builder.priority=15" --save ol8_codeready_builder
 
+# dnf-rpmfusion リポジトリの追加 (priority=25)
+dnf -y install https://download1.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm 
+yes no | cp -ai /etc/yum.repos.d/rpmfusion-free-updates.repo{,.default}
+dnf config-manager --disable rpmfusion-free-updates
+dnf config-manager --setopt="rpmfusion-free-updates.priority=25" --save rpmfusion-free-updates
+
 # oracle-epel-release-el8 の epel-release への入れ替え
 dnf -y remove oracle-epel-release-el8
 rm /etc/yum.repos.d/epel.repo* -f
@@ -67,9 +88,9 @@ dnf config-manager --disable epel-modular
 dnf config-manager --setopt="epel-modular.priority=20" --save epel-modular
 
 # Unbreakable Enterprise Kernel(UEK) の削除と無効化
-dnf -y remove kernel-uek
-yes no | cp -ai /etc/yum.repos.d/oracle-linux-ol8.repo{,.default}
-dnf config-manager --disable ol8_UEKR6
+# dnf -y remove kernel-uek
+# yes no | cp -ai /etc/yum.repos.d/oracle-linux-ol8.repo{,.default}
+# dnf config-manager --disable ol8_UEKR6
 
 # CentOS 由来パッケージの入れ替え・削除
 # rpm -qa | grep centos
@@ -79,26 +100,30 @@ dnf -y swap centos-indexhtml redhat-indexhtml --nobest
 # ディストリビューション固有のモジュールストリームを切り替える
 sed -i -e 's|rhel8|ol8|g' /etc/dnf/modules.d/*.module
 
-# 最新の利用可能なバージョンへインストール済みパッケージを同期する
-# dnf distro-sync
-
 # 問題のある module をリセット
 dnf -y module reset virt
+
+# epel と rpmfusion の問題を解消
+dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
 
 # dnf update を実行
 dnf -y update
 
-# Laptop2020-CentOS-To-OracleLinux.sh を削除
-rm -f ./Laptop2020-CentOS-To-OracleLinux.sh
-
 # 移行完了
+rpm -qi oraclelinux-release > /dev/null
+RET=$?
 echo "********************************************************"
-echo "移行が完了しました。"
-echo "10秒後に再起動を行います...。"
+if [[ "${RET}" -eq 0 ]]; then
+    echo "移行が完了しました。"
+    echo "問題がなければ"
+else
+    echo "Oracle Linux への移行に失敗しました。"
+    echo "表示されているテキストメッセージをすべてコピーして RAT へ相談するか、"
+    echo "Linux 上のデータはすべて消えますが、イメージを丸ごと差し替えて移行する方法を検討してください。"
+    exit 1
+fi
 echo "********************************************************"
 
-# 遅延
-sleep 10
 
-# すべての反映
-reboot
+# Laptop2020-CentOS-To-OracleLinux.sh を削除
+rm -f "${0}"
