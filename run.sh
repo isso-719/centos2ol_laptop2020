@@ -1,31 +1,8 @@
-#!/bin/bash
-
-echo "********************************************************"
-echo "CentOS から OracleLinux へ移行を開始します。"
-echo "移行には約 15 分 から 30 分 かかります。(ダミー)"
-echo "また、10 GB 以上の通信を必要とします。(ダミー)"
-echo "********************************************************"
-
-# 実行済みチェック
-rpm -qi oraclelinux-release > /dev/null
-RET=$?
-if [[ "${RET}" -eq 0 ]]; then
-    echo "Oracle Linux へ移行済みのため、実行する必要はありません。"
-    exit 0
-fi
-
-# CentOS かチェック
-rpm -qi centos-release > /dev/null
-RET=$?
-if [[ "${RET}" -eq 0 ]]; then
-    echo "CentOS ではないため、実行できません。"
-    exit 0
-fi
-
+#!/bin/sh
 
 # centos2ol.sh をダウンロード
+echo "Centos2ol.sh をダウンロードします。"
 cd
-if [ -f centos2ol.sh ]; then rm centos2ol.sh -f; fi
 wget https://raw.githubusercontent.com/oracle/centos2ol/main/centos2ol.sh
 
 # centos2ol.sh の権限を設定
@@ -33,6 +10,7 @@ chmod 700 centos2ol.sh
 
 # centos2ol.sh を実行
 # -V オプションで最小限の RPM のみ Oracle Linux のものにする
+echo "CentOS から OracleLinux へ移行を開始します。"
 ./centos2ol.sh -V
 
 # ./centos2ol を削除
@@ -56,7 +34,7 @@ dnf config-manager --setopt="ol8_codeready_builder.priority=15" --save ol8_coder
 # oracle-epel-release-el8 の epel-release への入れ替え
 dnf -y remove oracle-epel-release-el8
 rm /etc/yum.repos.d/epel.repo* -f
-dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
 # 通常時 EPEL のリポジトリを使わないようにする
 yes no | cp -ai /etc/yum.repos.d/epel.repo{,.default}
@@ -67,38 +45,18 @@ dnf config-manager --disable epel-modular
 dnf config-manager --setopt="epel-modular.priority=20" --save epel-modular
 
 # Unbreakable Enterprise Kernel(UEK) の削除と無効化
-dnf -y remove kernel-uek
+dnf remove kernel-uek
 yes no | cp -ai /etc/yum.repos.d/oracle-linux-ol8.repo{,.default}
 dnf config-manager --disable ol8_UEKR6
 
 # CentOS 由来パッケージの入れ替え・削除
-# rpm -qa | grep centos
-dnf -y swap centos-indexhtml redhat-indexhtml --nobest
-
-# dnf コマンドを実行時の競合を解消
-# ディストリビューション固有のモジュールストリームを切り替える
-sed -i -e 's|rhel8|ol8|g' /etc/dnf/modules.d/*.module
-
-# 最新の利用可能なバージョンへインストール済みパッケージを同期する
-# dnf distro-sync
-
-# 問題のある module をリセット
-dnf -y module reset virt
-
-# dnf update を実行
-dnf -y update
-
-# Laptop2020-CentOS-To-OracleLinux.sh を削除
-rm -f ./Laptop2020-CentOS-To-OracleLinux.sh
+rpm -qa | grep centos
+dnf swap centos-logos-httpd oracle-logos-httpd
+dnf remove centos-gpg-keys
 
 # 移行完了
-echo "********************************************************"
-echo "移行が完了しました。"
-echo "10秒後に再起動を行います...。"
-echo "********************************************************"
-
-# 遅延
-sleep 10
+echo "移行が完了しました。再起動します..."
 
 # すべての反映
 reboot
+
