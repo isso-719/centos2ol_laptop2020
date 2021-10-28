@@ -126,6 +126,7 @@ dnf config-manager --setopt="rpmfusion-free-updates.priority=25" --save rpmfusio
 dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
 
 # 移行完了
+# 前にもOracle Linux チェックを行ってるが、ここでも再度チェック
 rpm -qi oraclelinux-release > /dev/null
 RET=$?
 echo "********************************************************"
