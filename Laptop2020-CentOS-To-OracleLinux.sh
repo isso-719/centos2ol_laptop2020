@@ -71,7 +71,7 @@ rpm -qi oraclelinux-release > /dev/null
 RET=$?
 echo "********************************************************"
 if [[ "${RET}" -eq 0 ]]; then
-    echo "Oracle Linux への移行に失敗しました。"
+    echo "Oracle Linux への移行に失敗しました。あ"
     echo "表示されているテキストメッセージをすべてコピーして RAT へ相談するか、"
     echo "Linux 上のデータはすべて消えますが、イメージを丸ごと差し替えて移行する方法を検討してください。"
     exit 1
