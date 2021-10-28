@@ -14,7 +14,7 @@ cat /etc/redhat-release | grep CentOS > /dev/null
 RET=$?
 if [[ "${RET}" -ne 0 ]]; then
     echo "CentOS でないので実行はできません。"
-    exit 1
+    exit 0
 fi
 
 # 移行前質問
@@ -28,7 +28,7 @@ if [[ "${IS_SNAPSHOT}" != "y" ]]; then
     exit 1
 fi
 
-# 実行環境チェック
+# 実行環境についての注意と質問
 # Down 80 Mbps/s での実行時間 19m 59.684s
 echo "********************************************************"
 echo "移行には約 20 分かかります。時間に余裕がある時に移行してください。"
@@ -59,10 +59,24 @@ wget https://raw.githubusercontent.com/oracle/centos2ol/main/centos2ol.sh
 chmod 700 centos2ol.sh
 
 # centos2ol.sh を実行
+# -V オプションで切り替え前と切り替え後のRPM情報の確認 (Verify RPM information before and after the switch)
+# -k オプションで Unbreakable Enterprise Kernel(UEK) のインストールを実行せず、無効化する
 ./centos2ol.sh -V -k
 
 # ./centos2ol を削除
 rm -f ./centos2ol.sh
+
+# ここまでで移行が失敗していないか確認
+rpm -qi oraclelinux-release > /dev/null
+RET=$?
+echo "********************************************************"
+if [[ "${RET}" -eq 0 ]]; then
+    echo "Oracle Linux への移行に失敗しました。"
+    echo "表示されているテキストメッセージをすべてコピーして RAT へ相談するか、"
+    echo "Linux 上のデータはすべて消えますが、イメージを丸ごと差し替えて移行する方法を検討してください。"
+    exit 1
+fi
+echo "********************************************************"
 
 # CentOS の不要なレポジトリ設定を削除
 rm /etc/yum.repos.d/CentOS-* -f
@@ -121,7 +135,7 @@ rpm -qi oraclelinux-release > /dev/null
 RET=$?
 echo "********************************************************"
 if [[ "${RET}" -eq 0 ]]; then
-    echo "移行が完了しました。"
+    echo "Oracle Linux への移行が完了しました。"
     echo "エラーが表示されている場合は RAT までスクリーンショット等を添付して相談してください。"
     echo "reboot コマンドを実行して反映してください。"
 else
