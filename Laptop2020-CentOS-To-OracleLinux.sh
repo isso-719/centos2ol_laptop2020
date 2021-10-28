@@ -18,7 +18,7 @@ if [[ "${RET}" -ne 0 ]]; then
 fi
 
 
-# 移行前チェック
+# 移行前質問
 echo "********************************************************"
 echo "注意: 移行処理に失敗すると、この Linux 環境が壊れる可能性があります。"
 echo "下記の質問に y もしくは N で回答してください。"
@@ -29,12 +29,20 @@ if [[ "${IS_SNAPSHOT}" != "y" ]]; then
     exit 1
 fi
 
+echo "********************************************************"
+echo "移行には約 15 分 から 30 分 かかります。(ダミー)"
+echo "また、10 GB 以上の安定した通信を必要とします。(ダミー)"
+echo "********************************************************"
+read -p "RAT からの案内手順に従い、現在の環境は以上の要件を満たしていますか? y: はい, N: いいえ: " IS_SNAPSHOT
+if [[ "${IS_SNAPSHOT}" != "y" ]]; then
+    echo "環境を整えてから再度実行してください。"
+    exit 1
+fi
+
 
 # 移行開始
 echo "********************************************************"
 echo "CentOS から OracleLinux へ移行を開始します。"
-echo "移行には約 15 分 から 30 分 かかります。(ダミー)"
-echo "また、10 GB 以上の通信を必要とします。(ダミー)"
 echo "********************************************************"
 
 # centos2ol.sh の存在チェックと削除
@@ -69,7 +77,7 @@ dnf config-manager --enable ol8_codeready_builder
 dnf config-manager --setopt="ol8_codeready_builder.priority=15" --save ol8_codeready_builder
 
 # dnf-rpmfusion リポジトリの追加 (priority=25)
-dnf -y install https://download1.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm 
+dnf -y install https://download1.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm
 yes no | cp -ai /etc/yum.repos.d/rpmfusion-free-updates.repo{,.default}
 dnf config-manager --disable rpmfusion-free-updates
 dnf config-manager --setopt="rpmfusion-free-updates.priority=25" --save rpmfusion-free-updates
@@ -107,7 +115,7 @@ dnf -y module reset virt
 dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
 
 # dnf update を実行
-dnf -y update
+# dnf -y update
 
 # 移行完了
 rpm -qi oraclelinux-release > /dev/null
@@ -115,7 +123,7 @@ RET=$?
 echo "********************************************************"
 if [[ "${RET}" -eq 0 ]]; then
     echo "移行が完了しました。"
-    echo "問題がなければ"
+    echo "問題がなければ reboot コマンドを実行して反映してください。"
 else
     echo "Oracle Linux への移行に失敗しました。"
     echo "表示されているテキストメッセージをすべてコピーして RAT へ相談するか、"
