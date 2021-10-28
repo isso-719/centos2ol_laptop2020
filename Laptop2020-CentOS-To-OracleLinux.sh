@@ -111,7 +111,7 @@ sed -i -e 's|rhel8|ol8|g' /etc/dnf/modules.d/*.module
 # 問題のある module をリセット
 dnf -y module reset virt
 
-# epel と rpmfusion の問題を解消
+# epel と rpmfusion の問題を解消しつつ、dnf update を実行
 dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
 
 # dnf update を実行
