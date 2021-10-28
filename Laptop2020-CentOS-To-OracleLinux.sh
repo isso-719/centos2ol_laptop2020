@@ -17,7 +17,7 @@ if [[ "${RET}" -ne 0 ]]; then
     exit 0
 fi
 
-# 移行前質問
+# 移行前にスナップショット取っているのか質問
 echo "********************************************************"
 echo "注意: 移行処理に失敗すると、この Linux 環境が壊れる可能性があります。"
 echo "下記の質問に y もしくは N で回答してください。"
@@ -65,18 +65,6 @@ chmod 700 centos2ol.sh
 
 # ./centos2ol を削除
 rm -f ./centos2ol.sh
-
-# ここまでで移行が失敗していないか確認
-rpm -qi oraclelinux-release > /dev/null
-RET=$?
-echo "********************************************************"
-if [[ "${RET}" -eq 0 ]]; then
-    echo "Oracle Linux への移行に失敗しました。あ"
-    echo "表示されているテキストメッセージをすべてコピーして RAT へ相談するか、"
-    echo "Linux 上のデータはすべて消えますが、イメージを丸ごと差し替えて移行する方法を検討してください。"
-    exit 1
-fi
-echo "********************************************************"
 
 # CentOS の不要なレポジトリ設定を削除
 rm /etc/yum.repos.d/CentOS-* -f
@@ -126,7 +114,6 @@ dnf config-manager --setopt="rpmfusion-free-updates.priority=25" --save rpmfusio
 dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
 
 # 移行完了
-# 前にもOracle Linux チェックを行ってるが、ここでも再度チェック
 rpm -qi oraclelinux-release > /dev/null
 RET=$?
 echo "********************************************************"
