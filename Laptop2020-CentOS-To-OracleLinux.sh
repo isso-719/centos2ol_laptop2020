@@ -17,8 +17,8 @@ fi
 # CentOS かチェック
 rpm -qi centos-release > /dev/null
 RET=$?
-if [[ "${RET}" -eq 0 ]]; then
-    echo "CentOS ではないため、実行できません。"
+if [[ "${RET}" -ne 0 ]]; then
+    echo "CentOS ではありません。"
     exit 0
 fi
 
