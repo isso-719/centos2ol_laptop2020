@@ -13,7 +13,7 @@ fi
 cat /etc/redhat-release | grep CentOS > /dev/null
 RET=$?
 if [[ "${RET}" -ne 0 ]]; then
-    echo "CentOS ではありません。"
+    echo "CentOS でないので実行はできません。"
     exit 1
 fi
 
@@ -29,9 +29,10 @@ if [[ "${IS_SNAPSHOT}" != "y" ]]; then
     exit 1
 fi
 
+# Down 80 Mbps/s での実行時間 19m 59.684s
 echo "********************************************************"
-echo "移行には約 15 分 から 30 分 かかります。(ダミー)"
-echo "また、10 GB 以上の安定した通信を必要とします。(ダミー)"
+echo "移行には約 20 分かかります。時間に余裕がある時に移行してください。"
+echo "また、約 10 GB 以上の安定した通信を必要とします。(ダミー)"
 echo "********************************************************"
 read -p "RAT からの案内手順に従い、現在の環境は以上の要件を満たしていますか? y: はい, N: いいえ: " IS_SNAPSHOT
 if [[ "${IS_SNAPSHOT}" != "y" ]]; then
@@ -43,6 +44,7 @@ fi
 # 移行開始
 echo "********************************************************"
 echo "CentOS から OracleLinux へ移行を開始します。"
+echo "移行中、デスクトップの壁紙が正常に映らなくなる場合があります。"
 echo "********************************************************"
 
 # centos2ol.sh の存在チェックと削除
@@ -95,7 +97,6 @@ dnf config-manager --setopt="epel-modular.priority=20" --save epel-modular
 # dnf config-manager --disable ol8_UEKR6
 
 # CentOS 由来パッケージの入れ替え・削除
-# rpm -qa | grep centos
 dnf -y swap centos-indexhtml redhat-indexhtml --nobest
 
 # dnf コマンドを実行時の競合を解消
@@ -111,10 +112,7 @@ yes no | cp -ai /etc/yum.repos.d/rpmfusion-free-updates.repo{,.default}
 dnf config-manager --disable rpmfusion-free-updates
 dnf config-manager --setopt="rpmfusion-free-updates.priority=25" --save rpmfusion-free-updates
 
-# dnf update を実行
-# dnf -y update
-
-# epel と rpmfusion の問題を解消しつつ、dnf update を実行
+# epel,elrepo,rpmfusion-free-updates レポジトリを有効にしつつ、dnf update を実行
 dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
 
 # 移行完了
@@ -123,7 +121,8 @@ RET=$?
 echo "********************************************************"
 if [[ "${RET}" -eq 0 ]]; then
     echo "移行が完了しました。"
-    echo "問題がなければ reboot コマンドを実行して反映してください。"
+    echo "エラーが表示されている場合は RAT までスクリーンショット等を添付して相談してください。"
+    echo "reboot コマンドを実行して反映してください。"
 else
     echo "Oracle Linux への移行に失敗しました。"
     echo "表示されているテキストメッセージをすべてコピーして RAT へ相談するか、"
