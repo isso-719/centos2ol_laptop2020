@@ -112,7 +112,7 @@ dnf config-manager --disable rpmfusion-free-updates
 dnf config-manager --setopt="rpmfusion-free-updates.priority=25" --save rpmfusion-free-updates
 
 # dnf update を実行
-dnf -y update
+# dnf -y update
 
 # epel と rpmfusion の問題を解消しつつ、dnf update を実行
 dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
