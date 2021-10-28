@@ -66,6 +66,9 @@ rm -f ./centos2ol.sh
 # CentOS の不要なレポジトリ設定を削除
 rm /etc/yum.repos.d/CentOS-* -f
 
+# 問題のある module をリセット
+dnf -y module reset virt
+
 # dnf 公式リポジトリの優先度設定 (priority=10)
 yes no | cp -ai /etc/yum.repos.d/oracle-linux-ol8.repo{,.default}
 yes no | cp -ai /etc/yum.repos.d/uek-ol8.repo{,.default}
@@ -102,9 +105,6 @@ dnf -y swap centos-indexhtml redhat-indexhtml --nobest
 # dnf コマンドを実行時の競合を解消
 # ディストリビューション固有のモジュールストリームを切り替える
 sed -i -e 's|rhel8|ol8|g' /etc/dnf/modules.d/*.module
-
-# 問題のある module をリセット
-dnf -y module reset virt
 
 # dnf-rpmfusion リポジトリの追加 (priority=25)
 dnf -y install https://download1.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm
