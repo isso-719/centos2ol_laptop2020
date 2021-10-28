@@ -10,10 +10,10 @@ if [[ "${RET}" -eq 0 ]]; then
 fi
 
 # CentOS かチェック
-rpm -qi centos-release > /dev/null
+cat /etc/redhat-release | grep CentOS > /dev/null
 RET=$?
 if [[ "${RET}" -ne 0 ]]; then
-    echo "CentOS ではないので、実行できません。"
+    echo "CentOS ではありません。"
     exit 1
 fi
 
