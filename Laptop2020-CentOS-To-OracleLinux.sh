@@ -76,12 +76,6 @@ yes no | cp -ai /etc/yum.repos.d/oracle-linux-ol8.repo{,.default}
 dnf config-manager --enable ol8_codeready_builder
 dnf config-manager --setopt="ol8_codeready_builder.priority=15" --save ol8_codeready_builder
 
-# dnf-rpmfusion リポジトリの追加 (priority=25)
-dnf -y install https://download1.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm
-yes no | cp -ai /etc/yum.repos.d/rpmfusion-free-updates.repo{,.default}
-dnf config-manager --disable rpmfusion-free-updates
-dnf config-manager --setopt="rpmfusion-free-updates.priority=25" --save rpmfusion-free-updates
-
 # oracle-epel-release-el8 の epel-release への入れ替え
 dnf -y remove oracle-epel-release-el8
 rm /etc/yum.repos.d/epel.repo* -f
@@ -106,16 +100,22 @@ dnf -y swap centos-indexhtml redhat-indexhtml --nobest
 
 # dnf コマンドを実行時の競合を解消
 # ディストリビューション固有のモジュールストリームを切り替える
-# sed -i -e 's|rhel8|ol8|g' /etc/dnf/modules.d/*.module
+sed -i -e 's|rhel8|ol8|g' /etc/dnf/modules.d/*.module
 
 # 問題のある module をリセット
 dnf -y module reset virt
 
-# epel と rpmfusion の問題を解消しつつ、dnf update を実行
-dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
+# dnf-rpmfusion リポジトリの追加 (priority=25)
+dnf -y install https://download1.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm
+yes no | cp -ai /etc/yum.repos.d/rpmfusion-free-updates.repo{,.default}
+dnf config-manager --disable rpmfusion-free-updates
+dnf config-manager --setopt="rpmfusion-free-updates.priority=25" --save rpmfusion-free-updates
 
 # dnf update を実行
-# dnf -y update
+dnf -y update
+
+# epel と rpmfusion の問題を解消しつつ、dnf update を実行
+dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
 
 # 移行完了
 rpm -qi oraclelinux-release > /dev/null
