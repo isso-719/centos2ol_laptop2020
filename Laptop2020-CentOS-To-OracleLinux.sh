@@ -64,15 +64,6 @@ rm -f ./centos2ol.sh
 # CentOS の不要なレポジトリ設定を削除
 rm /etc/yum.repos.d/CentOS-* -f
 
-# CentOS 由来パッケージの入れ替え・削除
-# rpm -qa | grep centos
-dnf -y swap centos-indexhtml redhat-indexhtml --nobest
-
-# dnf コマンドを実行時の競合を解消
-# ディストリビューション固有のモジュールストリームを切り替える
-sed -i -e 's|rhel8|ol8|g' /etc/dnf/modules.d/*.module
-
-
 # dnf 公式リポジトリの優先度設定 (priority=10)
 yes no | cp -ai /etc/yum.repos.d/oracle-linux-ol8.repo{,.default}
 yes no | cp -ai /etc/yum.repos.d/uek-ol8.repo{,.default}
@@ -109,6 +100,13 @@ dnf config-manager --setopt="epel-modular.priority=20" --save epel-modular
 # yes no | cp -ai /etc/yum.repos.d/oracle-linux-ol8.repo{,.default}
 # dnf config-manager --disable ol8_UEKR6
 
+# CentOS 由来パッケージの入れ替え・削除
+# rpm -qa | grep centos
+dnf -y swap centos-indexhtml redhat-indexhtml --nobest
+
+# dnf コマンドを実行時の競合を解消
+# ディストリビューション固有のモジュールストリームを切り替える
+# sed -i -e 's|rhel8|ol8|g' /etc/dnf/modules.d/*.module
 
 # 問題のある module をリセット
 dnf -y module reset virt
