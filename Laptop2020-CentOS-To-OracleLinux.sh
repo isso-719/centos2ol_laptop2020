@@ -106,11 +106,6 @@ dnf config-manager --setopt="epel.priority=20" --save epel
 dnf config-manager --disable epel-modular
 dnf config-manager --setopt="epel-modular.priority=20" --save epel-modular
 
-# Unbreakable Enterprise Kernel(UEK) の削除と無効化
-# dnf -y remove kernel-uek
-# yes no | cp -ai /etc/yum.repos.d/oracle-linux-ol8.repo{,.default}
-# dnf config-manager --disable ol8_UEKR6
-
 # CentOS 由来パッケージの入れ替え・削除
 dnf -y swap centos-indexhtml redhat-indexhtml --nobest
 
