@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Laptop2020 の CentOS 8 環境 EOL に伴う Oracle Linux 8 への移行スクリプトです。
+#
+# @author Kazuki Isogai (RAT)
 
 # システムチェック
 # 実行済みチェック
@@ -17,6 +21,11 @@ if [[ "${RET}" -ne 0 ]]; then
     exit 0
 fi
 
+# 移行前説明
+echo "********************************************************"
+echo "CentOS 8 から Oracle Linux 8 へ移行を開始します。"
+echo "********************************************************"
+
 # 移行前にスナップショット取っているのか質問
 echo "********************************************************"
 echo "注意: 移行処理に失敗すると、この Linux 環境が壊れる可能性があります。"
@@ -32,7 +41,7 @@ fi
 # Down 80 Mbps での実行時間 19m 59.684s
 echo "********************************************************"
 echo "移行には約 20 分かかります。時間に余裕がある時に移行してください。"
-echo "また、約 2.0 GB の安定した通信を必要とします。"
+echo "また、約 2.0 GB のダウンロードが可能な安定した通信環境を必要とします。"
 echo "下記の質問に y もしくは N で回答してください。"
 echo "********************************************************"
 read -p "現在の環境は以上の要件を満たしていますか? y: はい, N: いいえ: " IS_SNAPSHOT
@@ -44,13 +53,20 @@ fi
 
 # 移行開始
 echo "********************************************************"
-echo "CentOS から OracleLinux へ移行を開始します。"
+echo "CentOS から Oracle Linux へ移行を開始します。"
 echo "移行中、デスクトップの壁紙が正常に映らなくなる場合があります。"
 echo "********************************************************"
 
+# dnf-automatic.timer を停止し、自動更新を停止する
+systemctl stop dnf-automatic.timer
+kill -9 $(pgrep dnf-automatic)
+systemctl disable dnf-automatic.timer
+
 # centos2ol.sh の存在チェックと削除
 cd
-if [ -f centos2ol.sh ]; then rm centos2ol.sh -f; fi
+if [[ -f centos2ol.sh ]]; then
+    rm centos2ol.sh -f;
+fi
 
 # centos2ol.sh をダウンロード
 wget https://raw.githubusercontent.com/oracle/centos2ol/main/centos2ol.sh
@@ -105,13 +121,14 @@ sed -i -e 's|rhel8|ol8|g' /etc/dnf/modules.d/*.module
 dnf -y module reset virt
 
 # dnf-rpmfusion リポジトリの追加 (priority=25)
+# Oracle Linux への移行処理でリポジトリが削除されているため、再追加する
 dnf -y install https://download1.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm
 yes no | cp -ai /etc/yum.repos.d/rpmfusion-free-updates.repo{,.default}
 dnf config-manager --disable rpmfusion-free-updates
 dnf config-manager --setopt="rpmfusion-free-updates.priority=25" --save rpmfusion-free-updates
 
 # epel,elrepo,rpmfusion-free-updates レポジトリを有効にしつつ、dnf update を実行
-dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
+# dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
 
 # 移行完了
 rpm -qi oraclelinux-release > /dev/null
@@ -125,6 +142,7 @@ else
     echo "Oracle Linux への移行に失敗しました。"
     echo "表示されているテキストメッセージをすべてコピーして RAT へ相談するか、"
     echo "Linux 上のデータはすべて消えますが、イメージを丸ごと差し替えて移行する方法を検討してください。"
+    echo "なお、スナップショットから復元することでこのスクリプトを実行する前の状態に戻ることができます。"
     exit 1
 fi
 echo "********************************************************"
