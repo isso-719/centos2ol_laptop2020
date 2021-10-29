@@ -127,14 +127,8 @@ yes no | cp -ai /etc/yum.repos.d/rpmfusion-free-updates.repo{,.default}
 dnf config-manager --disable rpmfusion-free-updates
 dnf config-manager --setopt="rpmfusion-free-updates.priority=25" --save rpmfusion-free-updates
 
-# epel,elrepo,rpmfusion-free-updates レポジトリを有効にしつつ、dnf update を実行
-# dnf -y --enablerepo=epel,elrepo,rpmfusion-free-updates update
-
-# kernel アップデート
+# kernel をアップデート
 dnf -y update kernel
-
-# 最新のカーネル以外削除
-# dnf -y remove $(dnf repoquery --installonly --latest-limit=-1 -q)
 
 # 移行完了
 rpm -qi oraclelinux-release > /dev/null
