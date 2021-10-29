@@ -40,8 +40,8 @@ fi
 # 実行環境についての注意と質問
 # Down 80 Mbps での実行時間 19m 59.684s
 echo "********************************************************"
-echo "移行には約 20 分かかります。時間に余裕がある時に移行してください。"
-echo "また、約 2.0 GB のダウンロードが可能な安定した通信環境を必要とします。"
+echo "移行には約 8 分かかります。時間に余裕がある時に移行してください。"
+echo "約 2.0 GB のダウンロードが可能な安定した通信環境と、約 3.0 GBのストレージ容量を必要とします。"
 echo "下記の質問に y もしくは N で回答してください。"
 echo "********************************************************"
 read -p "現在の環境は以上の要件を満たしていますか? y: はい, N: いいえ: " IS_SNAPSHOT
@@ -134,7 +134,7 @@ dnf config-manager --setopt="rpmfusion-free-updates.priority=25" --save rpmfusio
 dnf -y update kernel
 
 # 最新のカーネル以外削除
-dnf -y remove $(dnf repoquery --installonly --latest-limit=-1 -q)
+# dnf -y remove $(dnf repoquery --installonly --latest-limit=-1 -q)
 
 # 移行完了
 rpm -qi oraclelinux-release > /dev/null
